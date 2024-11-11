@@ -62,7 +62,8 @@ export default class Heatmap {
   }
 
   render() {
-    const { node, data, colors, rows, cellSpacing, width, height } = this;
+    const { node, data, colors, rows, cellSpacing, width, height, direction } =
+      this;
 
     const cols = data.length / rows;
     const cellHeight = height / rows;
@@ -79,12 +80,20 @@ export default class Heatmap {
       .domain([min(values) as number, max(values) as number])
       .range([colors.start, colors.end]);
 
-    const cellX = (_: Datum, index: number) => {
-      return Math.floor(cellWidth * (index % cols));
-    };
-    const cellY = (_: Datum, index: number) => {
-      return cellHeight * Math.floor(index / cols);
-    };
+    let cellX, cellY;
+    switch (direction) {
+      case "column":
+        cellX = (_: Datum, index: number) =>
+          cellWidth * Math.floor(index / rows);
+        cellY = (_: Datum, index: number) =>
+          cellHeight * Math.floor(index % rows);
+        break;
+      default:
+        cellX = (_: Datum, index: number) =>
+          cellWidth * Math.floor(index % cols);
+        cellY = (_: Datum, index: number) =>
+          cellHeight * Math.floor(index / cols);
+    }
 
     svg
       .selectAll("rect")
