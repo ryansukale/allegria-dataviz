@@ -1,6 +1,8 @@
-import { select } from "d3-selection";
+import { select, type Selection } from "d3-selection";
 import { scaleLinear } from "d3-scale";
 import { min, max } from "d3-array";
+
+type D3SvgSelection = Selection<SVGSVGElement, unknown, null, undefined>;
 
 const defaultColors = {
   start: "#cacaca",
@@ -33,6 +35,7 @@ export default class Heatmap {
   cellSpacing: IsDefined<HeatmapArgs["cellSpacing"]>;
   colors: IsDefined<HeatmapArgs["colors"]>;
   direction: IsDefined<HeatmapArgs["direction"]>;
+  svg?: D3SvgSelection;
 
   constructor({
     node,
@@ -58,21 +61,14 @@ export default class Heatmap {
   }
 
   destroy() {
-    select(this.node).select("svg").remove();
+    this.svg?.remove();
   }
 
-  render() {
-    const { node, data, colors, rows, cellSpacing, width, height, direction } =
-      this;
-
+  renderGrid(svg: D3SvgSelection, width: number, height: number) {
+    const { data, rows, colors, direction, cellSpacing } = this;
     const cols = data.length / rows;
     const cellHeight = height / rows;
     const cellWidth = width / cols;
-
-    const svg = select(node)
-      .append("svg")
-      .attr("width", width)
-      .attr("height", height);
 
     const values = data.map((d) => d.value);
 
@@ -95,7 +91,8 @@ export default class Heatmap {
           cellHeight * Math.floor(index / cols);
     }
 
-    svg
+    const gridG = svg
+      .append("g")
       .selectAll("rect")
       .data(data)
       .enter()
@@ -105,5 +102,19 @@ export default class Heatmap {
       .attr("fill", (d) => colorScale(d.value))
       .attr("x", cellX)
       .attr("y", cellY);
+
+    return gridG;
+  }
+
+  render() {
+    const { node, width, height } = this;
+
+    this.svg = select(node)
+      .append("svg")
+      .attr("viewBox", [0, 0, width, height])
+      .attr("width", width)
+      .attr("height", height);
+
+    this.renderGrid(this.svg, width, height);
   }
 }
