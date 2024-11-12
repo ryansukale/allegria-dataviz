@@ -9,32 +9,37 @@ const defaultColors = {
   end: "blue",
 };
 
-interface Datum {
-  value: number;
-}
+type ValueType = { value: number };
 
-type HeatmapArgs = {
+type HeatmapArgs<DatumType> = {
+  // Required
   node: HTMLElement | string;
-  data: Datum[];
+  data: DatumType[];
   rows: number;
   width: number;
   height: number;
+
+  // Optional
   cellSpacing?: number;
   colors?: { start: string; end: string };
   direction?: "row" | "column";
+  getValue?: ((d: DatumType) => number) | typeof defaultGetValue;
 };
 
 type IsDefined<T> = Exclude<T, undefined>;
 
-export default class Heatmap {
+const defaultGetValue = (d: ValueType) => d.value;
+
+export default class Heatmap<DatumType> {
   node: HTMLElement;
-  data: HeatmapArgs["data"];
-  rows: HeatmapArgs["rows"];
-  width: HeatmapArgs["width"];
-  height: HeatmapArgs["height"];
-  cellSpacing: IsDefined<HeatmapArgs["cellSpacing"]>;
-  colors: IsDefined<HeatmapArgs["colors"]>;
-  direction: IsDefined<HeatmapArgs["direction"]>;
+  data: HeatmapArgs<DatumType>["data"];
+  rows: HeatmapArgs<DatumType>["rows"];
+  width: HeatmapArgs<DatumType>["width"];
+  height: HeatmapArgs<DatumType>["height"];
+  cellSpacing: IsDefined<HeatmapArgs<DatumType>["cellSpacing"]>;
+  colors: IsDefined<HeatmapArgs<DatumType>["colors"]>;
+  direction: IsDefined<HeatmapArgs<DatumType>["direction"]>;
+  getValue: IsDefined<HeatmapArgs<DatumType>["getValue"]>;
   svg?: D3SvgSelection;
 
   constructor({
@@ -46,7 +51,8 @@ export default class Heatmap {
     colors = defaultColors,
     cellSpacing = 2,
     direction = "row",
-  }: HeatmapArgs) {
+    getValue = defaultGetValue,
+  }: HeatmapArgs<DatumType>) {
     this.node =
       typeof node === "string"
         ? (document.querySelector(node) as HTMLElement)
@@ -58,6 +64,7 @@ export default class Heatmap {
     this.height = height;
     this.cellSpacing = cellSpacing;
     this.direction = direction;
+    this.getValue = getValue;
   }
 
   destroy() {
@@ -65,12 +72,13 @@ export default class Heatmap {
   }
 
   renderGrid(svg: D3SvgSelection, width: number, height: number) {
-    const { data, rows, colors, direction, cellSpacing } = this;
+    const { data, rows, colors, direction, cellSpacing, getValue } = this;
     const cols = data.length / rows;
     const cellHeight = height / rows;
     const cellWidth = width / cols;
 
-    const values = data.map((d) => d.value);
+    // @ts-expect-error Not sure why ts is messing up the arg types of getValue
+    const values = data.map((d) => getValue(d));
 
     const colorScale = scaleLinear<string>()
       .domain([min(values) as number, max(values) as number])
@@ -79,15 +87,15 @@ export default class Heatmap {
     let cellX, cellY;
     switch (direction) {
       case "column":
-        cellX = (_: Datum, index: number) =>
+        cellX = (_: DatumType, index: number) =>
           cellWidth * Math.floor(index / rows);
-        cellY = (_: Datum, index: number) =>
+        cellY = (_: DatumType, index: number) =>
           cellHeight * Math.floor(index % rows);
         break;
       default:
-        cellX = (_: Datum, index: number) =>
+        cellX = (_: DatumType, index: number) =>
           cellWidth * Math.floor(index % cols);
-        cellY = (_: Datum, index: number) =>
+        cellY = (_: DatumType, index: number) =>
           cellHeight * Math.floor(index / cols);
     }
 
