@@ -1,6 +1,7 @@
 import { select, type Selection } from "d3-selection";
 import { scaleLinear } from "d3-scale";
 import { min, max } from "d3-array";
+import setAttrs, { type AttributeMap } from "./logic/setAttrs";
 
 type D3SvgSelection = Selection<SVGSVGElement, unknown, null, undefined>;
 
@@ -8,20 +9,6 @@ const defaultColors = {
   start: "#cacaca",
   end: "blue",
 };
-
-type AttributeMap = {
-  [key: string]: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-};
-
-function setAttrs<T>(
-  attributes: AttributeMap | undefined,
-  selection: Selection<SVGRectElement, T, SVGGElement, unknown>
-) {
-  if (!attributes) return;
-  Object.entries(attributes).forEach(([attribute, val]) => {
-    selection.attr(attribute, val);
-  });
-}
 
 type HeatmapArgs<DatumType> = {
   // Required
