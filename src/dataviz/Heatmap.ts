@@ -9,8 +9,6 @@ const defaultColors = {
   end: "blue",
 };
 
-type ValueType = { value: number };
-
 type HeatmapArgs<DatumType> = {
   // Required
   node: HTMLElement | string;
@@ -18,17 +16,15 @@ type HeatmapArgs<DatumType> = {
   rows: number;
   width: number;
   height: number;
+  getValue: (d: DatumType) => number;
 
   // Optional
   cellSpacing?: number;
   colors?: { start: string; end: string };
   direction?: "row" | "column";
-  getValue?: ((d: DatumType) => number) | typeof defaultGetValue;
 };
 
 type IsDefined<T> = Exclude<T, undefined>;
-
-const defaultGetValue = (d: ValueType) => d.value;
 
 export default class Heatmap<DatumType> {
   node: HTMLElement;
@@ -39,7 +35,7 @@ export default class Heatmap<DatumType> {
   cellSpacing: IsDefined<HeatmapArgs<DatumType>["cellSpacing"]>;
   colors: IsDefined<HeatmapArgs<DatumType>["colors"]>;
   direction: IsDefined<HeatmapArgs<DatumType>["direction"]>;
-  getValue: IsDefined<HeatmapArgs<DatumType>["getValue"]>;
+  getValue: HeatmapArgs<DatumType>["getValue"];
   svg?: D3SvgSelection;
 
   constructor({
@@ -51,7 +47,7 @@ export default class Heatmap<DatumType> {
     colors = defaultColors,
     cellSpacing = 2,
     direction = "row",
-    getValue = defaultGetValue,
+    getValue,
   }: HeatmapArgs<DatumType>) {
     this.node =
       typeof node === "string"
@@ -77,7 +73,6 @@ export default class Heatmap<DatumType> {
     const cellHeight = height / rows;
     const cellWidth = width / cols;
 
-    // @ts-expect-error Not sure why ts is messing up the arg types of getValue
     const values = data.map((d) => getValue(d));
 
     const colorScale = scaleLinear<string>()
@@ -99,19 +94,19 @@ export default class Heatmap<DatumType> {
           cellHeight * Math.floor(index / cols);
     }
 
-    const gridG = svg
-      .append("g")
-      .selectAll("rect")
-      .data(data)
+    const gridGroup = svg.append("g").selectAll("rect").data(data);
+
+    const gridGroupEnterSelection = gridGroup
       .enter()
       .append("rect")
       .attr("width", cellWidth - cellSpacing)
       .attr("height", cellHeight - cellSpacing)
-      .attr("fill", (d) => colorScale(d.value))
       .attr("x", cellX)
       .attr("y", cellY);
 
-    return gridG;
+    gridGroupEnterSelection.attr("fill", (d) => colorScale(getValue(d)));
+
+    return gridGroup;
   }
 
   render() {
