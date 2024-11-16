@@ -52,7 +52,7 @@ export default class Heatmap<DatumType> {
   direction: IsDefined<HeatmapArgs<DatumType>["direction"]>;
   getValue: HeatmapArgs<DatumType>["getValue"];
   svg?: D3SvgSelection;
-  getCellAttributes?: () => AttributeMap;
+  getCellAttributes: () => AttributeMap;
 
   constructor({
     node,
@@ -64,7 +64,7 @@ export default class Heatmap<DatumType> {
     cellSpacing = 2,
     direction = "row",
     getValue,
-    getCellAttributes,
+    getCellAttributes = () => ({}),
   }: HeatmapArgs<DatumType>) {
     this.node =
       typeof node === "string"
@@ -114,17 +114,19 @@ export default class Heatmap<DatumType> {
 
     const gridGroup = svg.append("g").selectAll("rect").data(data);
 
-    const gridGroupEnterSelection = gridGroup
-      .enter()
-      .append("rect")
-      .attr("width", cellWidth - cellSpacing)
-      .attr("height", cellHeight - cellSpacing)
-      .attr("x", cellX)
-      .attr("y", cellY);
+    const gridGroupEnterSelection = gridGroup.enter().append("rect");
 
-    gridGroupEnterSelection.attr("fill", (d) => colorScale(getValue(d)));
-
-    setAttrs(this.getCellAttributes?.(), gridGroupEnterSelection);
+    setAttrs(
+      {
+        ...this.getCellAttributes(),
+        width: cellWidth - cellSpacing,
+        height: cellHeight - cellSpacing,
+        x: cellX,
+        y: cellY,
+        fill: (d: DatumType) => colorScale(getValue(d)),
+      },
+      gridGroupEnterSelection
+    );
 
     return gridGroup;
   }
