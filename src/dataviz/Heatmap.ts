@@ -9,6 +9,20 @@ const defaultColors = {
   end: "blue",
 };
 
+type AttributeMap = {
+  [key: string]: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+};
+
+function setAttrs<T>(
+  attributes: AttributeMap | undefined,
+  selection: Selection<SVGRectElement, T, SVGGElement, unknown>
+) {
+  if (!attributes) return;
+  Object.entries(attributes).forEach(([attribute, val]) => {
+    selection.attr(attribute, val);
+  });
+}
+
 type HeatmapArgs<DatumType> = {
   // Required
   node: HTMLElement | string;
@@ -22,6 +36,7 @@ type HeatmapArgs<DatumType> = {
   cellSpacing?: number;
   colors?: { start: string; end: string };
   direction?: "row" | "column";
+  getCellAttributes?: () => AttributeMap;
 };
 
 type IsDefined<T> = Exclude<T, undefined>;
@@ -37,6 +52,7 @@ export default class Heatmap<DatumType> {
   direction: IsDefined<HeatmapArgs<DatumType>["direction"]>;
   getValue: HeatmapArgs<DatumType>["getValue"];
   svg?: D3SvgSelection;
+  getCellAttributes?: () => AttributeMap;
 
   constructor({
     node,
@@ -48,6 +64,7 @@ export default class Heatmap<DatumType> {
     cellSpacing = 2,
     direction = "row",
     getValue,
+    getCellAttributes,
   }: HeatmapArgs<DatumType>) {
     this.node =
       typeof node === "string"
@@ -61,6 +78,7 @@ export default class Heatmap<DatumType> {
     this.cellSpacing = cellSpacing;
     this.direction = direction;
     this.getValue = getValue;
+    this.getCellAttributes = getCellAttributes;
   }
 
   destroy() {
@@ -105,6 +123,8 @@ export default class Heatmap<DatumType> {
       .attr("y", cellY);
 
     gridGroupEnterSelection.attr("fill", (d) => colorScale(getValue(d)));
+
+    setAttrs(this.getCellAttributes?.(), gridGroupEnterSelection);
 
     return gridGroup;
   }
