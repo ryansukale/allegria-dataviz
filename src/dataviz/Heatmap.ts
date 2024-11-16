@@ -1,14 +1,7 @@
 import { select, type Selection } from "d3-selection";
-import { scaleLinear } from "d3-scale";
-import { min, max } from "d3-array";
 import setAttrs, { type AttributeMap } from "./logic/setAttrs";
 
 type D3SvgSelection = Selection<SVGSVGElement, unknown, null, undefined>;
-
-const defaultColors = {
-  start: "#cacaca",
-  end: "blue",
-};
 
 type HeatmapArgs<DatumType> = {
   // Required
@@ -21,7 +14,6 @@ type HeatmapArgs<DatumType> = {
 
   // Optional
   cellSpacing?: number;
-  colors?: { start: string; end: string };
   direction?: "row" | "column";
   getCellAttributes?: () => AttributeMap;
 };
@@ -35,7 +27,6 @@ export default class Heatmap<DatumType> {
   width: HeatmapArgs<DatumType>["width"];
   height: HeatmapArgs<DatumType>["height"];
   cellSpacing: IsDefined<HeatmapArgs<DatumType>["cellSpacing"]>;
-  colors: IsDefined<HeatmapArgs<DatumType>["colors"]>;
   direction: IsDefined<HeatmapArgs<DatumType>["direction"]>;
   getValue: HeatmapArgs<DatumType>["getValue"];
   svg?: D3SvgSelection;
@@ -47,7 +38,6 @@ export default class Heatmap<DatumType> {
     rows,
     width,
     height,
-    colors = defaultColors,
     cellSpacing = 2,
     direction = "row",
     getValue,
@@ -58,7 +48,6 @@ export default class Heatmap<DatumType> {
         ? (document.querySelector(node) as HTMLElement)
         : node;
     this.data = data;
-    this.colors = colors;
     this.rows = rows;
     this.width = width;
     this.height = height;
@@ -73,16 +62,10 @@ export default class Heatmap<DatumType> {
   }
 
   renderGrid(svg: D3SvgSelection, width: number, height: number) {
-    const { data, rows, colors, direction, cellSpacing, getValue } = this;
+    const { data, rows, direction, cellSpacing } = this;
     const cols = data.length / rows;
     const cellHeight = height / rows;
     const cellWidth = width / cols;
-
-    const values = data.map((d) => getValue(d));
-
-    const colorScale = scaleLinear<string>()
-      .domain([min(values) as number, max(values) as number])
-      .range([colors.start, colors.end]);
 
     let cellX, cellY;
     switch (direction) {
@@ -110,7 +93,6 @@ export default class Heatmap<DatumType> {
         height: cellHeight - cellSpacing,
         x: cellX,
         y: cellY,
-        fill: (d: DatumType) => colorScale(getValue(d)),
       },
       gridGroupEnterSelection
     );
