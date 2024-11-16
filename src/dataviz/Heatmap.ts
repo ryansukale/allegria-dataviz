@@ -1,6 +1,7 @@
 import { select, type Selection } from "d3-selection";
 import { scaleLinear } from "d3-scale";
 import { min, max } from "d3-array";
+import setAttrs, { type AttributeMap } from "./logic/setAttrs";
 
 type D3SvgSelection = Selection<SVGSVGElement, unknown, null, undefined>;
 
@@ -22,6 +23,7 @@ type HeatmapArgs<DatumType> = {
   cellSpacing?: number;
   colors?: { start: string; end: string };
   direction?: "row" | "column";
+  getCellAttributes?: () => AttributeMap;
 };
 
 type IsDefined<T> = Exclude<T, undefined>;
@@ -37,6 +39,7 @@ export default class Heatmap<DatumType> {
   direction: IsDefined<HeatmapArgs<DatumType>["direction"]>;
   getValue: HeatmapArgs<DatumType>["getValue"];
   svg?: D3SvgSelection;
+  getCellAttributes: () => AttributeMap;
 
   constructor({
     node,
@@ -48,6 +51,7 @@ export default class Heatmap<DatumType> {
     cellSpacing = 2,
     direction = "row",
     getValue,
+    getCellAttributes = () => ({}),
   }: HeatmapArgs<DatumType>) {
     this.node =
       typeof node === "string"
@@ -61,6 +65,7 @@ export default class Heatmap<DatumType> {
     this.cellSpacing = cellSpacing;
     this.direction = direction;
     this.getValue = getValue;
+    this.getCellAttributes = getCellAttributes;
   }
 
   destroy() {
@@ -96,15 +101,19 @@ export default class Heatmap<DatumType> {
 
     const gridGroup = svg.append("g").selectAll("rect").data(data);
 
-    const gridGroupEnterSelection = gridGroup
-      .enter()
-      .append("rect")
-      .attr("width", cellWidth - cellSpacing)
-      .attr("height", cellHeight - cellSpacing)
-      .attr("x", cellX)
-      .attr("y", cellY);
+    const gridGroupEnterSelection = gridGroup.enter().append("rect");
 
-    gridGroupEnterSelection.attr("fill", (d) => colorScale(getValue(d)));
+    setAttrs(
+      {
+        ...this.getCellAttributes(),
+        width: cellWidth - cellSpacing,
+        height: cellHeight - cellSpacing,
+        x: cellX,
+        y: cellY,
+        fill: (d: DatumType) => colorScale(getValue(d)),
+      },
+      gridGroupEnterSelection
+    );
 
     return gridGroup;
   }
