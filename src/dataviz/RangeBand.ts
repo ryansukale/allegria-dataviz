@@ -1,17 +1,15 @@
-import { select, type Selection } from "d3-selection";
-import { brushX, type D3BrushEvent } from "d3-brush";
-
-type D3SvgSelection = Selection<SVGSVGElement, unknown, null, undefined>;
-type D3GSelection = Selection<SVGGElement, unknown, null, undefined>;
+import { select } from "d3-selection";
+import { type D3BrushEvent } from "d3-brush";
+import createBrush from "./logic/createBrush";
 
 type RangeBandArgs = {
   node: HTMLElement | string;
-  svg?: D3SvgSelection;
+  svg?: D3Selection["SVG"];
   width: number;
   height: number;
 };
 export default class RangeBand {
-  svg?: D3SvgSelection;
+  svg?: D3Selection["SVG"];
   node: HTMLElement;
   width: RangeBandArgs["width"];
   height: RangeBandArgs["height"];
@@ -29,21 +27,10 @@ export default class RangeBand {
     this.svg?.remove();
   }
 
-  initializeBrush(container: D3GSelection) {
-    const brush = brushX()
-      .extent([
-        [0, 0],
-        [this.width, this.height],
-      ])
-      .on("brush end", this.onBrushed);
-
-    container.call(brush);
-  }
-
-  onBrushed(e: D3BrushEvent<SVGGElement>) {
+  onBrushed = (e: D3BrushEvent<unknown>) => {
     const brushExtent = e.selection;
     console.log(brushExtent);
-  }
+  };
 
   renderContainer() {
     this.svg = select(this.node)
@@ -56,6 +43,9 @@ export default class RangeBand {
   render() {
     const container = this.renderContainer();
 
-    this.initializeBrush(container);
+    createBrush({
+      container,
+      onBrush: this.onBrushed,
+    });
   }
 }
