@@ -1,7 +1,5 @@
-import { select, type Selection, type BaseType } from "d3-selection";
+import { select } from "d3-selection";
 import setAttrs, { type AttributeMap } from "./logic/setAttrs";
-
-type D3SvgSelection = Selection<SVGSVGElement, unknown, null, undefined>;
 
 type HeatmapArgs<DatumType> = {
   // Required
@@ -29,7 +27,7 @@ export default class Heatmap<DatumType> {
   cellSpacing: IsDefined<HeatmapArgs<DatumType>["cellSpacing"]>;
   direction: IsDefined<HeatmapArgs<DatumType>["direction"]>;
   getValue: HeatmapArgs<DatumType>["getValue"];
-  svg?: D3SvgSelection;
+  svg?: D3Selection["SVG"];
   getCellAttributes: () => AttributeMap;
 
   constructor({
@@ -61,7 +59,7 @@ export default class Heatmap<DatumType> {
     this.svg?.remove();
   }
 
-  renderGrid(svg: D3SvgSelection, width: number, height: number) {
+  renderGrid(svg: D3Selection["SVG"], width: number, height: number) {
     const { data, rows, direction, cellSpacing } = this;
     const cols = data.length / rows;
     const cellHeight = height / rows;
