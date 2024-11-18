@@ -1,4 +1,4 @@
-import { select, type Selection, type BaseType } from "d3-selection";
+import { select, type Selection } from "d3-selection";
 import setAttrs, { type AttributeMap } from "./logic/setAttrs";
 
 type D3SvgSelection = Selection<SVGSVGElement, unknown, null, undefined>;
