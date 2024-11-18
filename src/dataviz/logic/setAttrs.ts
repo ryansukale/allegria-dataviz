@@ -1,12 +1,17 @@
-import { type Selection } from "d3-selection";
+import { type Selection, type BaseType } from "d3-selection";
 
 export type AttributeMap = {
   [key: string]: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 };
 
-export default function setAttrs<T>(
+export default function setAttrs<
+  GElement extends BaseType,
+  Datum,
+  PElement extends BaseType,
+  PDatum
+>(
   attributes: AttributeMap | undefined,
-  selection: Selection<SVGRectElement, T, SVGGElement, unknown>
+  selection: Selection<GElement, Datum, PElement, PDatum>
 ) {
   if (!attributes) return;
   Object.entries(attributes).forEach(([attribute, val]) => {
