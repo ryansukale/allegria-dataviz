@@ -1,4 +1,4 @@
-import { select, type Selection } from "d3-selection";
+import { select, type Selection, type BaseType } from "d3-selection";
 import setAttrs, { type AttributeMap } from "./logic/setAttrs";
 
 type D3SvgSelection = Selection<SVGSVGElement, unknown, null, undefined>;
@@ -84,7 +84,7 @@ export default class Heatmap<DatumType> {
 
     const gridGroup = svg.append("g").selectAll("rect").data(data);
 
-    const gridGroupEnterSelection = gridGroup.enter().append("rect");
+    const gridGroupRects = gridGroup.join("rect");
 
     setAttrs(
       {
@@ -94,7 +94,7 @@ export default class Heatmap<DatumType> {
         x: cellX,
         y: cellY,
       },
-      gridGroupEnterSelection
+      gridGroupRects
     );
 
     return gridGroup;
