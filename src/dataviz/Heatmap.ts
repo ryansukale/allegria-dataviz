@@ -9,6 +9,7 @@ type HeatmapArgs<DatumType> = {
   width: number;
   height: number;
   getValue: (d: DatumType) => number;
+  onClickCell: (e: PointerEvent, d: DatumType) => void;
 
   // Optional
   cellSpacing?: number;
@@ -29,6 +30,7 @@ export default class Heatmap<DatumType> {
   getValue: HeatmapArgs<DatumType>["getValue"];
   svg?: D3Selection["SVG"];
   getCellAttributes: () => AttributeMap;
+  onClickCell: HeatmapArgs<DatumType>["onClickCell"];
 
   constructor({
     node,
@@ -39,6 +41,7 @@ export default class Heatmap<DatumType> {
     cellSpacing = 2,
     direction = "row",
     getValue,
+    onClickCell,
     getCellAttributes = () => ({}),
   }: HeatmapArgs<DatumType>) {
     this.node =
@@ -53,6 +56,7 @@ export default class Heatmap<DatumType> {
     this.direction = direction;
     this.getValue = getValue;
     this.getCellAttributes = getCellAttributes;
+    this.onClickCell = onClickCell;
   }
 
   destroy() {
@@ -92,7 +96,7 @@ export default class Heatmap<DatumType> {
   }
 
   renderGrid(svg: D3Selection["SVG"], width: number, height: number) {
-    const { data, rows, direction } = this;
+    const { data, rows, direction, onClickCell } = this;
     const cols = data.length / rows;
     const cellHeight = height / rows;
     const cellWidth = width / cols;
@@ -120,6 +124,13 @@ export default class Heatmap<DatumType> {
       cellX,
       cellY,
     });
+
+    if (onClickCell) {
+      cellsGroup.on("click", (event: PointerEvent) => {
+        // @ts-expect-error Selecting an existing node
+        onClickCell(event, select(event.target).datum());
+      });
+    }
 
     return cellsGroup;
   }
