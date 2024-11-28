@@ -17,46 +17,20 @@ type HeatmapArgs<DatumType> = {
   getCellAttributes?: () => AttributeMap;
 };
 
-type IsDefined<T> = Exclude<T, undefined>;
+const DEFAULT_CELL_SPACING = 2;
 
 export default class Heatmap<DatumType> {
-  node: HTMLElement;
-  data: HeatmapArgs<DatumType>["data"];
-  rows: HeatmapArgs<DatumType>["rows"];
-  width: HeatmapArgs<DatumType>["width"];
-  height: HeatmapArgs<DatumType>["height"];
-  cellSpacing: IsDefined<HeatmapArgs<DatumType>["cellSpacing"]>;
-  direction: IsDefined<HeatmapArgs<DatumType>["direction"]>;
-  getValue: HeatmapArgs<DatumType>["getValue"];
-  svg?: D3Selection["SVG"];
-  getCellAttributes: () => AttributeMap;
-  onClickCell: HeatmapArgs<DatumType>["onClickCell"];
+  private node: HTMLElement;
+  private args: HeatmapArgs<DatumType>;
+  private svg?: D3Selection["SVG"];
 
-  constructor({
-    node,
-    data,
-    rows,
-    width,
-    height,
-    cellSpacing = 2,
-    direction = "row",
-    getValue,
-    onClickCell,
-    getCellAttributes = () => ({}),
-  }: HeatmapArgs<DatumType>) {
+  constructor(args: HeatmapArgs<DatumType>) {
     this.node =
-      typeof node === "string"
-        ? (document.querySelector(node) as HTMLElement)
-        : node;
-    this.data = data;
-    this.rows = rows;
-    this.width = width;
-    this.height = height;
-    this.cellSpacing = cellSpacing;
-    this.direction = direction;
-    this.getValue = getValue;
-    this.getCellAttributes = getCellAttributes;
-    this.onClickCell = onClickCell;
+      typeof args.node === "string"
+        ? (document.querySelector(args.node) as HTMLElement)
+        : args.node;
+
+    this.args = Object.freeze(args);
   }
 
   destroy() {
@@ -76,16 +50,16 @@ export default class Heatmap<DatumType> {
     cellX: (d: DatumType, i: number) => number;
     cellY: (d: DatumType, i: number) => number;
   }) {
-    const { cellSpacing } = this;
+    const { cellSpacing, data, getCellAttributes } = this.args;
 
-    const gridGroup = container.selectAll("rect").data(this.data);
+    const gridGroup = container.selectAll("rect").data(data);
     const gridGroupRects = gridGroup.join("rect");
 
     setAttrs(
       {
-        ...this.getCellAttributes(),
-        width: cellWidth - cellSpacing,
-        height: cellHeight - cellSpacing,
+        ...getCellAttributes?.(),
+        width: cellWidth - (cellSpacing ?? DEFAULT_CELL_SPACING),
+        height: cellHeight - (cellSpacing ?? DEFAULT_CELL_SPACING),
         x: cellX,
         y: cellY,
       },
@@ -96,7 +70,7 @@ export default class Heatmap<DatumType> {
   }
 
   renderGrid(svg: D3Selection["SVG"], width: number, height: number) {
-    const { data, rows, direction, onClickCell } = this;
+    const { data, rows, direction, onClickCell } = this.args;
     const cols = data.length / rows;
     const cellHeight = height / rows;
     const cellWidth = width / cols;
@@ -136,9 +110,9 @@ export default class Heatmap<DatumType> {
   }
 
   render() {
-    const { node, width, height } = this;
+    const { width, height } = this.args;
 
-    this.svg = select(node)
+    this.svg = select(this.node)
       .append("svg")
       .attr("viewBox", [0, 0, width, height])
       .attr("width", width)
