@@ -19,6 +19,21 @@ type HeatmapArgs<DatumType> = {
 
 const DEFAULT_CELL_SPACING = 2;
 
+function enableTooltips(items, tip, getTipContent) {
+  items
+    .on("mouseover", function (event, d) {
+      // console.log(event, d);
+      tip
+        .style("opacity", 1)
+        .html(() => getTipContent(d))
+        .style("left", event.pageX - 25 + "px")
+        .style("top", event.pageY - 75 + "px");
+    })
+    .on("mouseout", function (d) {
+      tip.style("opacity", 0);
+    });
+}
+
 export default class Heatmap<DatumType> {
   private node: HTMLElement;
   private args: HeatmapArgs<DatumType>;
@@ -50,7 +65,7 @@ export default class Heatmap<DatumType> {
     cellX: (d: DatumType, i: number) => number;
     cellY: (d: DatumType, i: number) => number;
   }) {
-    const { cellSpacing, data, getCellAttributes } = this.args;
+    const { cellSpacing, data, getCellAttributes, getValue } = this.args;
 
     const gridGroup = container.selectAll("rect").data(data);
     const gridGroupRects = gridGroup.join("rect");
@@ -65,6 +80,15 @@ export default class Heatmap<DatumType> {
       },
       gridGroupRects
     );
+
+    const tip = select("body")
+      .append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0);
+
+    enableTooltips(gridGroupRects, tip, function (d: DatumType) {
+      return "The exact value of<br>this cell is: " + getValue(d);
+    });
 
     return gridGroup;
   }
