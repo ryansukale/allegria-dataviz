@@ -1,4 +1,4 @@
-import { select } from "d3-selection";
+import { select, pointer } from "d3-selection";
 import setAttrs, { type AttributeMap } from "./logic/setAttrs";
 
 type HeatmapArgs<DatumType> = {
@@ -10,6 +10,7 @@ type HeatmapArgs<DatumType> = {
   height: number;
   getValue: (d: DatumType) => number;
   onClickCell: (e: PointerEvent, d: DatumType) => void;
+  // TODO: Add callback to indicate current element is being hovered on
 
   // Optional
   cellSpacing?: number;
@@ -19,18 +20,21 @@ type HeatmapArgs<DatumType> = {
 
 const DEFAULT_CELL_SPACING = 2;
 
-function enableTooltips(items, tip, getTipContent) {
+function enableTooltips<DatumType>(items, tooltip, getTipContent) {
   items
-    .on("mouseover", function (event, d) {
+    .on("mouseover", function (event: PointerEvent, d: DatumType) {
       // console.log(event, d);
-      tip
+      const [x, y] = pointer(event);
+      tooltip
         .style("opacity", 1)
         .html(() => getTipContent(d))
-        .style("left", event.pageX - 25 + "px")
-        .style("top", event.pageY - 75 + "px");
+        .style("left", `${x - 25}px`)
+        .style("top", `${y + 15}px`);
+      // .style("left", event.pageX - 25 + "px")
+      // .style("top", event.pageY - 75 + "px");
     })
-    .on("mouseout", function (d) {
-      tip.style("opacity", 0);
+    .on("mouseout", function () {
+      tooltip.style("opacity", 0);
     });
 }
 
@@ -38,6 +42,7 @@ export default class Heatmap<DatumType> {
   private node: HTMLElement;
   private args: HeatmapArgs<DatumType>;
   private svg?: D3Selection["SVG"];
+  private tooltip?: D3Selection["DIV"];
 
   constructor(args: HeatmapArgs<DatumType>) {
     this.node =
@@ -49,7 +54,7 @@ export default class Heatmap<DatumType> {
   }
 
   destroy() {
-    this.svg?.remove();
+    [this.svg, this.tooltip].forEach((el) => el?.remove());
   }
 
   renderCells({
@@ -81,12 +86,13 @@ export default class Heatmap<DatumType> {
       gridGroupRects
     );
 
-    const tip = select("body")
+    this.tooltip = select("body")
       .append("div")
-      .attr("class", "tooltip")
+      .attr("class", "heatmap-tooltip")
+      .style("position", "absolute")
       .style("opacity", 0);
 
-    enableTooltips(gridGroupRects, tip, function (d: DatumType) {
+    enableTooltips(gridGroupRects, this.tooltip, function (d: DatumType) {
       return "The exact value of<br>this cell is: " + getValue(d);
     });
 
