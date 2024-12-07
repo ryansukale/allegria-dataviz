@@ -1,5 +1,7 @@
 import { select, pointer } from "d3-selection";
 import setAttrs, { type AttributeMap } from "./logic/setAttrs";
+import Tooltip from "./Tooltip";
+import destroy from "./logic/destroy";
 
 type HeatmapArgs<DatumType> = {
   // Required
@@ -54,7 +56,7 @@ export default class Heatmap<DatumType> {
   }
 
   destroy() {
-    [this.svg, this.tooltip].forEach((el) => el?.remove());
+    destroy([this.svg, this.tooltip]);
   }
 
   renderCells({
@@ -72,8 +74,7 @@ export default class Heatmap<DatumType> {
   }) {
     const { cellSpacing, data, getCellAttributes, getValue } = this.args;
 
-    const gridGroup = container.selectAll("rect").data(data);
-    const gridGroupRects = gridGroup.join("rect");
+    const gridRects = container.selectAll("rect").data(data).join("rect");
 
     setAttrs(
       {
@@ -83,20 +84,35 @@ export default class Heatmap<DatumType> {
         x: cellX,
         y: cellY,
       },
-      gridGroupRects
+      gridRects
     );
 
-    this.tooltip = select("body")
-      .append("div")
-      .attr("class", "heatmap-tooltip")
-      .style("position", "absolute")
-      .style("opacity", 0);
+    this.tooltip = new Tooltip(this.svg);
 
-    enableTooltips(gridGroupRects, this.tooltip, function (d: DatumType) {
-      return "The exact value of<br>this cell is: " + getValue(d);
+    gridRects.on("mouseover", (event: PointerEvent, d: DatumType) => {
+      const [x, y] = pointer(event);
+      this.tooltip.show(
+        `<span>The exact value of<br>this cell is: ${getValue(d)}</span>`,
+        x,
+        y
+      );
     });
 
-    return gridGroup;
+    gridRects.on("mouseout", () => {
+      this.tooltip.hide();
+    });
+
+    // this.tooltip = select("body")
+    //   .append("div")
+    //   .attr("class", "heatmap-tooltip")
+    //   .style("position", "absolute")
+    //   .style("opacity", 0);
+
+    // enableTooltips(gridRects, this.tooltip, function (d: DatumType) {
+    //   return "The exact value of<br>this cell is: " + getValue(d);
+    // });
+
+    return gridRects;
   }
 
   renderGrid(svg: D3Selection["SVG"], width: number, height: number) {
