@@ -2,6 +2,10 @@
  * Inspired by https://observablehq.com/@siliconjazz/basic-svg-tooltip
  */
 import destroy from "./logic/destroy";
+import getClosest from "./logic/getClosest";
+import { select, pointer } from "d3-selection";
+
+const getClosestSVG = getClosest("svg");
 
 export default class Tooltip {
   mouseOffset = { x: 10, y: 10 };
@@ -26,10 +30,10 @@ export default class Tooltip {
       max-width: 150px;
   }`;
 
-  constructor(svg) {
-    this.svg = svg;
-    this.styleTag = svg.append("style").text(this.style);
-    this.foreignObject = svg
+  constructor(nodes, getMarkup) {
+    this.svg = getClosestSVG(nodes);
+    this.styleTag = this.svg.append("style").text(this.style);
+    this.foreignObject = this.svg
       .append("foreignObject")
       .attr("width", "100%")
       .attr("height", "100%")
@@ -37,20 +41,29 @@ export default class Tooltip {
     this.tooltip = this.foreignObject
       .append("xhtml:div")
       .attr("class", "svg-tooltip");
-    // debugger;
+
+    nodes.on("mouseover", (event, d) => {
+      const [x, y] = pointer(event);
+      const markup = getMarkup(d);
+      this.show(markup, x, y);
+    });
+
+    nodes.on("mouseout", () => {
+      this.hide();
+    });
   }
 
   destroy() {
     destroy([this.styleTag, this.foreignObject]);
   }
 
-  show(text, x, y) {
+  show(markup, x, y) {
     const { tooltip, svg, mouseOffset } = this;
 
     let posX = x + mouseOffset.x;
     let posY = y + mouseOffset.y;
 
-    tooltip.html(text);
+    tooltip.html(markup);
     tooltip.style("visibility", "visible");
 
     const svgBox = svg.node().getBBox();

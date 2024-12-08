@@ -1,10 +1,10 @@
-import { select, pointer } from "d3-selection";
+import { select } from "d3-selection";
 import setAttrs, { type AttributeMap } from "./logic/setAttrs";
 import Tooltip from "./Tooltip";
 import destroy from "./logic/destroy";
 
 type HeatmapArgs<DatumType> = {
-  // Required
+  // Required args
   node: HTMLElement | string;
   data: DatumType[];
   rows: number;
@@ -12,33 +12,15 @@ type HeatmapArgs<DatumType> = {
   height: number;
   getValue: (d: DatumType) => number;
   onClickCell: (e: PointerEvent, d: DatumType) => void;
-  // TODO: Add callback to indicate current element is being hovered on
 
-  // Optional
+  // Optional args
   cellSpacing?: number;
   direction?: "row" | "column";
+  getCellTooltip?: (d: DatumType) => string;
   getCellAttributes?: () => AttributeMap;
 };
 
 const DEFAULT_CELL_SPACING = 2;
-
-function enableTooltips<DatumType>(items, tooltip, getTipContent) {
-  items
-    .on("mouseover", function (event: PointerEvent, d: DatumType) {
-      // console.log(event, d);
-      const [x, y] = pointer(event);
-      tooltip
-        .style("opacity", 1)
-        .html(() => getTipContent(d))
-        .style("left", `${x - 25}px`)
-        .style("top", `${y + 15}px`);
-      // .style("left", event.pageX - 25 + "px")
-      // .style("top", event.pageY - 75 + "px");
-    })
-    .on("mouseout", function () {
-      tooltip.style("opacity", 0);
-    });
-}
 
 export default class Heatmap<DatumType> {
   private node: HTMLElement;
@@ -72,9 +54,9 @@ export default class Heatmap<DatumType> {
     cellX: (d: DatumType, i: number) => number;
     cellY: (d: DatumType, i: number) => number;
   }) {
-    const { cellSpacing, data, getCellAttributes, getValue } = this.args;
+    const { cellSpacing, data, getCellAttributes } = this.args;
 
-    const gridRects = container.selectAll("rect").data(data).join("rect");
+    const cells = container.selectAll("rect").data(data).join("rect");
 
     setAttrs(
       {
@@ -84,39 +66,14 @@ export default class Heatmap<DatumType> {
         x: cellX,
         y: cellY,
       },
-      gridRects
+      cells
     );
 
-    this.tooltip = new Tooltip(this.svg);
-
-    gridRects.on("mouseover", (event: PointerEvent, d: DatumType) => {
-      const [x, y] = pointer(event);
-      this.tooltip.show(
-        `<span>The exact value of<br>this cell is: ${getValue(d)}</span>`,
-        x,
-        y
-      );
-    });
-
-    gridRects.on("mouseout", () => {
-      this.tooltip.hide();
-    });
-
-    // this.tooltip = select("body")
-    //   .append("div")
-    //   .attr("class", "heatmap-tooltip")
-    //   .style("position", "absolute")
-    //   .style("opacity", 0);
-
-    // enableTooltips(gridRects, this.tooltip, function (d: DatumType) {
-    //   return "The exact value of<br>this cell is: " + getValue(d);
-    // });
-
-    return gridRects;
+    return cells;
   }
 
   renderGrid(svg: D3Selection["SVG"], width: number, height: number) {
-    const { data, rows, direction, onClickCell } = this.args;
+    const { data, rows, direction } = this.args;
     const cols = data.length / rows;
     const cellHeight = height / rows;
     const cellWidth = width / cols;
@@ -145,14 +102,28 @@ export default class Heatmap<DatumType> {
       cellY,
     });
 
-    if (onClickCell) {
-      cellsGroup.on("click", (event: PointerEvent) => {
-        // @ts-expect-error Selecting an existing node
-        onClickCell(event, select(event.target).datum());
-      });
-    }
+    this.setupCellClick(cellsGroup);
+    this.setupCellTooltip(cellsGroup);
 
     return cellsGroup;
+  }
+
+  setupCellTooltip(cellsGroup: D3Selection["G"]) {
+    const { getCellTooltip } = this.args;
+    if (getCellTooltip) {
+      const cells = cellsGroup.selectAll("rect");
+      this.tooltip = new Tooltip(cells, getCellTooltip);
+    }
+  }
+
+  setupCellClick(cellsGroup: D3Selection["G"]) {
+    const { onClickCell } = this.args;
+    if (onClickCell) {
+      cellsGroup.on("click", (event: PointerEvent) =>
+        // @ts-expect-error Selecting an existing node
+        onClickCell(event, select(event.target).datum())
+      );
+    }
   }
 
   render() {
