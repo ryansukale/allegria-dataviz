@@ -15,19 +15,17 @@ export default class Tooltip {
   svg = null;
 
   style = `
-    .svg-tooltip {
-      background-color: rgba(255, 255, 255, 0.7);
+    .allegria-tooltip-container {
       position: absolute;
+      background-color: rgba(255, 255, 255, 0.7);
       transform: translate(178px, 410.19px);
       border-style: solid;
       border-color: black;
       border-width: 1px;
       border-radius: 2px;
-      font-family: sans-serif;
       font-size: 12px;
       padding: 8px;
       visibility: hidden;
-      max-width: 150px;
   }`;
 
   constructor(nodes, getMarkup) {
@@ -40,7 +38,7 @@ export default class Tooltip {
       .attr("pointer-events", "none");
     this.tooltip = this.foreignObject
       .append("xhtml:div")
-      .attr("class", "svg-tooltip");
+      .attr("class", "allegria-tooltip-container");
 
     nodes.on("mouseover", (event, d) => {
       const markup = getMarkup(d);
