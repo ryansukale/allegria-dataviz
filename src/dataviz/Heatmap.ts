@@ -1,19 +1,22 @@
 import { select } from "d3-selection";
 import setAttrs, { type AttributeMap } from "./logic/setAttrs";
+import Tooltip from "./Tooltip";
+import destroy from "./logic/destroy";
 
 type HeatmapArgs<DatumType> = {
-  // Required
+  // Required args
   node: HTMLElement | string;
   data: DatumType[];
   rows: number;
   width: number;
   height: number;
-  getValue: (d: DatumType) => number;
+  getValue?: (d: DatumType) => number;
   onClickCell: (e: PointerEvent, d: DatumType) => void;
 
-  // Optional
+  // Optional args
   cellSpacing?: number;
   direction?: "row" | "column";
+  getCellTooltip?: (d: DatumType) => string;
   getCellAttributes?: () => AttributeMap;
 };
 
@@ -23,6 +26,7 @@ export default class Heatmap<DatumType> {
   private node: HTMLElement;
   private args: HeatmapArgs<DatumType>;
   private svg?: D3Selection["SVG"];
+  private tooltip?: D3Selection["DIV"];
 
   constructor(args: HeatmapArgs<DatumType>) {
     this.node =
@@ -34,7 +38,7 @@ export default class Heatmap<DatumType> {
   }
 
   destroy() {
-    this.svg?.remove();
+    destroy([this.svg, this.tooltip]);
   }
 
   renderCells({
@@ -52,8 +56,7 @@ export default class Heatmap<DatumType> {
   }) {
     const { cellSpacing, data, getCellAttributes } = this.args;
 
-    const gridGroup = container.selectAll("rect").data(data);
-    const gridGroupRects = gridGroup.join("rect");
+    const cells = container.selectAll("rect").data(data).join("rect");
 
     setAttrs(
       {
@@ -63,14 +66,14 @@ export default class Heatmap<DatumType> {
         x: cellX,
         y: cellY,
       },
-      gridGroupRects
+      cells
     );
 
-    return gridGroup;
+    return cells;
   }
 
   renderGrid(svg: D3Selection["SVG"], width: number, height: number) {
-    const { data, rows, direction, onClickCell } = this.args;
+    const { data, rows, direction } = this.args;
     const cols = data.length / rows;
     const cellHeight = height / rows;
     const cellWidth = width / cols;
@@ -99,14 +102,28 @@ export default class Heatmap<DatumType> {
       cellY,
     });
 
-    if (onClickCell) {
-      cellsGroup.on("click", (event: PointerEvent) => {
-        // @ts-expect-error Selecting an existing node
-        onClickCell(event, select(event.target).datum());
-      });
-    }
+    this.setupCellClick(cellsGroup);
+    this.setupCellTooltip(cellsGroup);
 
     return cellsGroup;
+  }
+
+  setupCellTooltip(cellsGroup: D3Selection["G"]) {
+    const { getCellTooltip } = this.args;
+    if (getCellTooltip) {
+      const cells = cellsGroup.selectAll("rect");
+      this.tooltip = new Tooltip(cells, getCellTooltip);
+    }
+  }
+
+  setupCellClick(cellsGroup: D3Selection["G"]) {
+    const { onClickCell } = this.args;
+    if (onClickCell) {
+      cellsGroup.on("click", (event: PointerEvent) =>
+        // @ts-expect-error Selecting an existing node
+        onClickCell(event, select(event.target).datum())
+      );
+    }
   }
 
   render() {
