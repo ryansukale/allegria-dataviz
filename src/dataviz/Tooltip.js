@@ -43,14 +43,14 @@ export default class Tooltip {
       .attr("class", "svg-tooltip");
 
     nodes.on("mouseover", (event, d) => {
-      const [x, y] = pointer(event);
       const markup = getMarkup(d);
-      this.show(markup, x, y);
+      if (markup) {
+        const [x, y] = pointer(event);
+        this.show(markup, x, y);
+      }
     });
 
-    nodes.on("mouseout", () => {
-      this.hide();
-    });
+    nodes.on("mouseout", () => this.hide());
   }
 
   destroy() {

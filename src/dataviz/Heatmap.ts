@@ -10,7 +10,7 @@ type HeatmapArgs<DatumType> = {
   rows: number;
   width: number;
   height: number;
-  getValue: (d: DatumType) => number;
+  getValue?: (d: DatumType) => number;
   onClickCell: (e: PointerEvent, d: DatumType) => void;
 
   // Optional args
