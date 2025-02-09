@@ -3,7 +3,7 @@ import setAttrs, { type AttributeMap } from "./logic/setAttrs";
 import Tooltip from "./Tooltip";
 import destroy from "./logic/destroy";
 
-type HeatmapArgs<DatumType> = {
+type DensityGridArgs<DatumType> = {
   // Required args
   node: HTMLElement | string;
   data: DatumType[];
@@ -22,13 +22,13 @@ type HeatmapArgs<DatumType> = {
 
 const DEFAULT_CELL_SPACING = 2;
 
-export default class Heatmap<DatumType> {
+export default class DensityGrid<DatumType> {
   private node: HTMLElement;
-  private args: HeatmapArgs<DatumType>;
+  private args: DensityGridArgs<DatumType>;
   private svg?: D3Selection["SVG"];
   private tooltip?: D3Selection["DIV"];
 
-  constructor(args: HeatmapArgs<DatumType>) {
+  constructor(args: DensityGridArgs<DatumType>) {
     this.node =
       typeof args.node === "string"
         ? (document.querySelector(args.node) as HTMLElement)
