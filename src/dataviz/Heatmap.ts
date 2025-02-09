@@ -11,11 +11,11 @@ type HeatmapArgs<DatumType> = {
   width: number;
   height: number;
   getValue?: (d: DatumType) => number;
-  onClickCell: (e: PointerEvent, d: DatumType) => void;
 
   // Optional args
   cellSpacing?: number;
   direction?: "row" | "column";
+  onClickCell?: (e: PointerEvent, d: DatumType) => void;
   getCellTooltip?: (d: DatumType) => string;
   getCellAttributes?: () => AttributeMap;
 };
