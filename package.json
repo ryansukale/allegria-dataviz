@@ -11,7 +11,12 @@
     "build": "npm run clean && npm run build:types && npm run build:js",
     "lint": "eslint .",
     "preview": "vite preview",
-    "release": "release-it"
+    "release:alpha": "npm run build && release-it --preRelease=alpha --npm.tag=next --git.requireBranch=develop",
+    "release:beta": "npm run build && release-it --preRelease=beta --npm.tag=beta --git.requireBranch=main",
+    "release:prod": "npm run build && release-it --npm.tag=latest --git.requireBranch=main",
+    "release:alpha:preview": "npm run release:alpha -- --dry-run",
+    "release:beta:preview": "npm run release:beta -- --dry-run",
+    "release:prod:preview": "npm run release:prod -- --dry-run"
   },
   "files": [
     "dist",
@@ -33,6 +38,18 @@
       "import": "./dist/dataviz/*.es.js",
       "require": "./dist/dataviz/*.cjs.js",
       "types": "./dist/dataviz/*.d.ts"
+    }
+  },
+  "release-it": {
+    "git": {
+      "tagName": "v${version}",
+      "commitMessage": "release: v${version}"
+    },
+    "github": {
+      "release": true
+    },
+    "npm": {
+      "publish": true
     }
   },
   "dependencies": {
@@ -66,6 +83,7 @@
     "eslint-plugin-react-refresh": "^0.4.14",
     "globals": "^15.11.0",
     "postcss": "^8.4.47",
+    "release-it": "^17.11.0",
     "rimraf": "^6.0.1",
     "tailwindcss": "^3.4.14",
     "typescript": "~5.6.2",
