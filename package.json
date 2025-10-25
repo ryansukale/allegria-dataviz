@@ -1,5 +1,5 @@
 {
-  "name": "allegria",
+  "name": "@allegria/dataviz",
   "version": "0.0.0",
   "type": "module",
   "main": "./dist/index.cjs.js",
@@ -24,20 +24,10 @@
   ],
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "import": "./dist/index.es.js",
-      "require": "./dist/index.cjs.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./dataviz": {
-      "import": "./dist/dataviz/index.es.js",
-      "require": "./dist/dataviz/index.cjs.js",
-      "types": "./dist/dataviz/index.d.ts"
-    },
-    "./dataviz/*": {
-      "import": "./dist/dataviz/*.es.js",
-      "require": "./dist/dataviz/*.cjs.js",
-      "types": "./dist/dataviz/*.d.ts"
+    "./*": {
+      "import": "./dist/*.es.js",
+      "require": "./dist/*.cjs.js",
+      "types": "./dist/*.d.ts"
     }
   },
   "release-it": {
