@@ -1,3 +1,4 @@
+// setup vite and releaseit using - https://gemini.google.com/app/d059a6a4e0ffe125
 // vite.config.ts
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
@@ -18,8 +19,9 @@ const createEntryMap = () => {
         filePath.lastIndexOf("/") + 1,
         filePath.lastIndexOf(".")
       );
-      // Alias will be the path without src/ or extension (e.g., 'dataviz/DensityGrid')
-      entry[`${folderName}/${fileName}`] = filePath;
+      // **CHANGE 1: Alias is now just the fileName (e.g., 'DensityGrid')**
+      // This maps the source file to the desired output name base.
+      entry[fileName] = filePath;
     });
   });
   return entry;
@@ -33,27 +35,20 @@ export default defineConfig({
     emptyOutDir: false,
     lib: {
       entry: createEntryMap(),
-      // name is not strictly needed for multiple entries with custom fileName
-      // name: 'AllegriaLibrary',
-
-      // CRITICAL: Explicitly define formats to ensure both are built
       formats: ["es", "cjs"],
 
-      // CRITICAL: The fileName function must use the [format] variable
-      // The entryName here will be the alias (e.g., 'dataviz/DensityGrid')
+      // **CHANGE 2: Modify fileName to use only the entryName (e.g., 'DensityGrid')**
+      // The entryName here is now just the filename (e.g., 'DensityGrid')
       fileName: (format, entryName) => {
-        // Output: 'dataviz/DensityGrid.es.js' and 'dataviz/DensityGrid.cjs.js'
+        // Output will be: 'DensityGrid.es.js' and 'DensityGrid.cjs.js'
         return `${entryName}.${format}.js`;
       },
     },
     rollupOptions: {
       external: ["react", "react-dom"],
-      // We rely on lib.fileName for naming, but we MUST ensure this is not overriding it
       output: {
-        // Ensure no conflicting naming that prevents format separation.
-        // The [format] placeholder is generally handled by the lib.fileName function.
-        // We can use entryFileNames to confirm the pathing is based on the entry alias.
-        entryFileNames: `[name].[format].js`, // Rollup template for safety
+        // Ensuring Rollup's internal naming follows the new format
+        entryFileNames: `[name].[format].js`,
         chunkFileNames: `[name]-[hash].js`,
       },
     },
