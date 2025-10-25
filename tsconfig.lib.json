@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "noEmit": false,                 // Overrides the "noEmit: true" from tsconfig.app.json
+    "declaration": true,             // Enable generation of .d.ts files
+    "declarationDir": "./dist",      // Output .d.ts files to the dist directory
+    "rootDir": "./src",              // Ensure the path mapping starts from 'src'
+    "emitDeclarationOnly": true,     // Do not generate .js files
+    "composite": false               // Disable composite flag for this build step
+  },
+  "include": ["src/**/*"]
+}
