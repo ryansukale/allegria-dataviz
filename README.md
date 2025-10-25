@@ -1,6 +1,21 @@
-# React + TypeScript + Vite
+# Allegria
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a small library of utilities. Starting out with some data visualization helpers.
+
+### Managing releases
+
+This project uses release-it to manage releases and has 3 scripts.
+
+```
+// 1. Alpha Release (from develop branch)
+npm run release:alpha
+
+// 2. Beta Release (from main/release branch - optional step before final prod)
+npm run release:beta
+
+// 3. Production Release (from main branch)
+npm run release:prod
+```
 
 Currently, two official plugins are available:
 
@@ -18,11 +33,11 @@ export default tseslint.config({
   languageOptions: {
     // other options...
     parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
+      project: ["./tsconfig.node.json", "./tsconfig.app.json"],
       tsconfigRootDir: import.meta.dirname,
     },
   },
-})
+});
 ```
 
 - Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
@@ -31,11 +46,11 @@ export default tseslint.config({
 
 ```js
 // eslint.config.js
-import react from 'eslint-plugin-react'
+import react from "eslint-plugin-react";
 
 export default tseslint.config({
   // Set the react version
-  settings: { react: { version: '18.3' } },
+  settings: { react: { version: "18.3" } },
   plugins: {
     // Add the react plugin
     react,
@@ -44,7 +59,7 @@ export default tseslint.config({
     // other rules...
     // Enable its recommended rules
     ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
+    ...react.configs["jsx-runtime"].rules,
   },
-})
+});
 ```
