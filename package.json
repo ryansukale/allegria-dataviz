@@ -1,31 +1,84 @@
 {
-  "name": "allegria",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@allegria/dataviz",
+  "version": "0.0.1-alpha.0",
+  "packageManager": "pnpm@10.33.0",
   "type": "module",
-  "main": "index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "clean": "rimraf dist",
+    "build:js": "pnpm build:es && pnpm build:cjs",
+    "build:es": "BUILD_FORMAT=es vite build",
+    "build:cjs": "BUILD_FORMAT=cjs vite build",
+    "build:types": "tsc -p tsconfig.lib.json",
+    "build": "pnpm clean && pnpm build:types && pnpm build:js",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "release:alpha": "pnpm build && release-it --preRelease=alpha --npm.tag=next --git.requireBranch=develop",
+    "release:beta": "pnpm build && release-it --preRelease=beta --npm.tag=beta --git.requireBranch=main",
+    "release:prod": "pnpm build && release-it --npm.tag=latest --git.requireBranch=main",
+    "release:alpha:preview": "pnpm release:alpha -- --dry-run",
+    "release:beta:preview": "pnpm release:beta -- --dry-run",
+    "release:prod:preview": "pnpm release:prod -- --dry-run"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.mjs",
+      "require": "./dist/*.cjs",
+      "default": "./dist/*.mjs"
+    }
+  },
+  "release-it": {
+    "git": {
+      "tagName": "v${version}",
+      "commitMessage": "release: v${version}"
+    },
+    "github": {
+      "release": true
+    },
+    "npm": {
+      "publish": true
+    }
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
+    "@types/ramda": "^0.30.2",
     "d3-array": "^3.2.4",
+    "d3-brush": "^3.0.0",
     "d3-interpolate": "^3.0.1",
     "d3-scale": "^4.0.2",
     "d3-selection": "^3.0.0",
+    "glob": "^11.0.3",
     "lodash-es": "^4.17.21",
+    "ramda": "^0.30.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
     "@types/d3-array": "^3.2.1",
+    "@types/d3-brush": "^3.0.6",
     "@types/d3-interpolate": "^3.0.4",
     "@types/d3-scale": "^4.0.8",
     "@types/d3-selection": "^3.0.11",
     "@types/lodash-es": "^4.17.12",
+    "@types/node": "^24.9.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",
@@ -35,9 +88,16 @@
     "eslint-plugin-react-refresh": "^0.4.14",
     "globals": "^15.11.0",
     "postcss": "^8.4.47",
+    "release-it": "^17.11.0",
+    "rimraf": "^6.0.1",
     "tailwindcss": "^3.4.14",
     "typescript": "~5.6.2",
     "typescript-eslint": "^8.11.0",
-    "vite": "^5.4.10"
+    "vite": "^5.4.10",
+    "jsdom": "^26.1.0",
+    "vitest": "^3.2.4"
+  },
+  "volta": {
+    "node": "20.16.0"
   }
 }
