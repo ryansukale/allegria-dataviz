@@ -7,13 +7,14 @@ import * as glob from "glob";
 
 const root = resolve(__dirname);
 const targetFolders = ["dataviz"];
+const buildFormat = process.env.BUILD_FORMAT === "cjs" ? "cjs" : "es";
 
 const createEntryMap = () => {
   const entry: Record<string, string> = {};
   targetFolders.forEach((folderName) => {
-    const files = glob.sync(
-      resolve(root, `src/${folderName}/*.{ts,tsx,js,jsx}`)
-    );
+    const files = glob
+      .sync(resolve(root, `src/${folderName}/*.{ts,tsx,js,jsx}`))
+      .filter((filePath) => !filePath.endsWith(".test.ts"));
     files.forEach((filePath) => {
       const fileName = filePath.substring(
         filePath.lastIndexOf("/") + 1,
@@ -35,21 +36,17 @@ export default defineConfig({
     emptyOutDir: false,
     lib: {
       entry: createEntryMap(),
-      formats: ["es", "cjs"],
+      formats: [buildFormat],
 
-      // **CHANGE 2: Modify fileName to use only the entryName (e.g., 'DensityGrid')**
-      // The entryName here is now just the filename (e.g., 'DensityGrid')
-      fileName: (format, entryName) => {
-        // Output will be: 'DensityGrid.es.js' and 'DensityGrid.cjs.js'
-        return `${entryName}.${format}.js`;
-      },
+      // Keep the format in the filename so Node can distinguish ESM and CJS.
+      fileName: (format, entryName) =>
+        format === "cjs" ? `${entryName}.cjs` : `${entryName}.mjs`,
     },
     rollupOptions: {
       external: ["react", "react-dom"],
       output: {
-        // Ensuring Rollup's internal naming follows the new format
-        entryFileNames: `[name].[format].js`,
-        chunkFileNames: `[name]-[hash].js`,
+        chunkFileNames:
+          buildFormat === "cjs" ? `[name]-[hash].cjs` : `[name]-[hash].mjs`,
       },
     },
   },

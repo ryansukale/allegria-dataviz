@@ -1,24 +1,19 @@
-/**
- * Inspired by https://observablehq.com/@siliconjazz/basic-svg-tooltip
- */
+import { pointer, select, type Selection } from "d3-selection";
 import destroy from "./logic/destroy";
-import getClosest from "./logic/getClosest";
-import { select, pointer } from "d3-selection";
 
-const getClosestSVG = getClosest("svg");
+type Disposable = { remove(): unknown };
 
-export default class Tooltip {
+export default class Tooltip<DatumType = unknown> {
   mouseOffset = { x: 10, y: 10 };
-  styleTag = null;
-  foreignObject = null;
-  tooltip = null;
-  svg = null;
+  styleTag: Disposable | undefined;
+  foreignObject: Disposable | undefined;
+  tooltip: D3Selection["DIV"] | undefined;
+  svg: D3Selection["SVG"];
 
   style = `
     .allegria-tooltip-container {
       position: absolute;
       background-color: rgba(255, 255, 255, 0.7);
-      transform: translate(178px, 410.19px);
       border-style: solid;
       border-color: black;
       border-width: 1px;
@@ -26,22 +21,29 @@ export default class Tooltip {
       font-size: 12px;
       padding: 8px;
       visibility: hidden;
-  }`;
+    }`;
 
-  constructor(nodes, getMarkup) {
-    this.svg = getClosestSVG(nodes);
+  constructor(
+    nodes: Selection<SVGRectElement, DatumType, SVGGElement, unknown>,
+    getMarkup: (datum: DatumType) => string | undefined,
+  ) {
+    const svgNode = nodes.node()?.closest("svg");
+    if (!svgNode) throw new Error("Tooltip nodes must be inside an SVG element");
+
+    this.svg = select(svgNode as SVGSVGElement);
     this.styleTag = this.svg.append("style").text(this.style);
-    this.foreignObject = this.svg
+    const foreignObject = this.svg
       .append("foreignObject")
       .attr("width", "100%")
       .attr("height", "100%")
       .attr("pointer-events", "none");
-    this.tooltip = this.foreignObject
+    this.foreignObject = foreignObject;
+    this.tooltip = foreignObject
       .append("xhtml:div")
       .attr("class", "allegria-tooltip-container");
 
-    nodes.on("mouseover", (event, d) => {
-      const markup = getMarkup(d);
+    nodes.on("mouseover", (event, datum) => {
+      const markup = getMarkup(datum);
       if (markup) {
         const [x, y] = pointer(event);
         this.show(markup, x, y);
@@ -55,8 +57,9 @@ export default class Tooltip {
     destroy([this.styleTag, this.foreignObject]);
   }
 
-  show(markup, x, y) {
+  show(markup: string, x: number, y: number) {
     const { tooltip, svg, mouseOffset } = this;
+    if (!tooltip || !svg) return;
 
     let posX = x + mouseOffset.x;
     let posY = y + mouseOffset.y;
@@ -64,8 +67,9 @@ export default class Tooltip {
     tooltip.html(markup);
     tooltip.style("visibility", "visible");
 
-    const svgBox = svg.node().getBBox();
-    const tooltipBox = tooltip.node().getBoundingClientRect();
+    const svgBox = svg.node()?.getBBox();
+    const tooltipBox = tooltip.node()?.getBoundingClientRect();
+    if (!svgBox || !tooltipBox) return;
 
     if (posX > svgBox.width - tooltipBox.width) {
       posX = x - tooltipBox.width - mouseOffset.x;
@@ -78,6 +82,6 @@ export default class Tooltip {
   }
 
   hide() {
-    this.tooltip.style("visibility", "hidden");
+    this.tooltip?.style("visibility", "hidden");
   }
 }

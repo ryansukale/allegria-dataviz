@@ -8,5 +8,6 @@
     "emitDeclarationOnly": true,     // Do not generate .js files
     "composite": false               // Disable composite flag for this build step
   },
-  "include": ["src/dataviz/**/*", "src/types.d.ts"]
+  "include": ["src/dataviz/**/*", "src/types.d.ts"],
+  "exclude": ["src/**/*.test.ts"]
 }
