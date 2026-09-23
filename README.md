@@ -1,65 +1,55 @@
-# Allegria
+# Allegria Dataviz
 
-This is a small library of utilities. Starting out with some data visualization helpers.
+Small, composable data-visualization building blocks for browser applications. The package currently provides SVG density grids, interactive range bands, tooltips, brushes, and D3 scale helpers.
 
-### Managing releases
+## Install
 
-This project uses release-it to manage releases and has 3 scripts.
-
-```
-// 1. Alpha Release (from develop branch)
-npm run release:alpha
-
-// 2. Beta Release (from main/release branch - optional step before final prod)
-npm run release:beta
-
-// 3. Production Release (from main branch)
-npm run release:prod
+```sh
+pnpm add @allegria/dataviz d3-selection d3-scale d3-array d3-brush
 ```
 
-Currently, two official plugins are available:
+The library requires a browser DOM and works with TypeScript or JavaScript projects.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Quick start
 
-## Expanding the ESLint configuration
+```ts
+import { DensityGrid } from "@allegria/dataviz";
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
+const grid = new DensityGrid({
+  node: "#chart",
+  data: [1, 2, 3, 4],
+  rows: 2,
+  width: 240,
+  height: 120,
+  getCellAttributes: (value) => ({ fill: value > 2 ? "steelblue" : "lightgray" }),
 });
+
+grid.render();
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+For individual modules, use subpath imports such as `@allegria/dataviz/DensityGrid` or `@allegria/dataviz/RangeBand`.
 
-```js
-// eslint.config.js
-import react from "eslint-plugin-react";
+## Components
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: "18.3" } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs["jsx-runtime"].rules,
-  },
-});
+- [`DensityGrid`](docs/density-grid.md) renders a rectangular data grid as SVG cells.
+- [`RangeBand`](docs/range-band.md) adds an interactive horizontal brush to an SVG container.
+- [`Tooltip`](docs/tooltip.md) provides the tooltip behavior used by `DensityGrid`.
+- [`Utilities`](docs/utilities.md) covers brushes and scale helpers.
+
+## Development
+
+```sh
+pnpm install
+pnpm dev
+pnpm lint
+pnpm build
+pnpm test
 ```
+
+## Releases
+
+Release preparation and branch expectations are documented in [`docs/releases.md`](docs/releases.md). Alpha releases come from `develop`; stable releases come from `main` and publish to the npm `latest` dist-tag.
+
+## License
+
+MIT

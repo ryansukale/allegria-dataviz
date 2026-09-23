@@ -1,33 +1,44 @@
 {
   "name": "@allegria/dataviz",
   "version": "0.0.1-alpha.0",
+  "packageManager": "pnpm@10.33.0",
   "type": "module",
-  "main": "./dist/index.cjs.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "vite",
     "clean": "rimraf dist",
-    "build:js": "vite build",
+    "build:js": "pnpm build:es && pnpm build:cjs",
+    "build:es": "BUILD_FORMAT=es vite build",
+    "build:cjs": "BUILD_FORMAT=cjs vite build",
     "build:types": "tsc -p tsconfig.lib.json",
-    "build": "npm run clean && npm run build:types && npm run build:js",
+    "build": "pnpm clean && pnpm build:types && pnpm build:js",
     "lint": "eslint .",
     "preview": "vite preview",
-    "release:alpha": "npm run build && release-it --preRelease=alpha --npm.tag=next --git.requireBranch=develop",
-    "release:beta": "npm run build && release-it --preRelease=beta --npm.tag=beta --git.requireBranch=main",
-    "release:prod": "npm run build && release-it --npm.tag=latest --git.requireBranch=main",
-    "release:alpha:preview": "npm run release:alpha -- --dry-run",
-    "release:beta:preview": "npm run release:beta -- --dry-run",
-    "release:prod:preview": "npm run release:prod -- --dry-run"
+    "test": "vitest run",
+    "release:alpha": "pnpm build && release-it --preRelease=alpha --npm.tag=next --git.requireBranch=develop",
+    "release:beta": "pnpm build && release-it --preRelease=beta --npm.tag=beta --git.requireBranch=main",
+    "release:prod": "pnpm build && release-it --npm.tag=latest --git.requireBranch=main",
+    "release:alpha:preview": "pnpm release:alpha -- --dry-run",
+    "release:beta:preview": "pnpm release:beta -- --dry-run",
+    "release:prod:preview": "pnpm release:prod -- --dry-run"
   },
   "files": [
     "dist",
     "README.md"
   ],
-  "types": "./dist/index.d.ts",
   "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
     "./*": {
-      "import": "./dist/*.es.js",
-      "require": "./dist/*.cjs.js",
-      "types": "./dist/*.d.ts"
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.mjs",
+      "require": "./dist/*.cjs",
+      "default": "./dist/*.mjs"
     }
   },
   "release-it": {
@@ -82,7 +93,9 @@
     "tailwindcss": "^3.4.14",
     "typescript": "~5.6.2",
     "typescript-eslint": "^8.11.0",
-    "vite": "^5.4.10"
+    "vite": "^5.4.10",
+    "jsdom": "^26.1.0",
+    "vitest": "^3.2.4"
   },
   "volta": {
     "node": "20.16.0"

@@ -3,7 +3,7 @@ import setAttrs, { type AttributeMap } from "./logic/setAttrs";
 import Tooltip from "./Tooltip";
 import destroy from "./logic/destroy";
 
-type DensityGridArgs<DatumType> = {
+export type DensityGridArgs<DatumType> = {
   // Required args
   node: HTMLElement | string;
   data: DatumType[];
@@ -17,7 +17,7 @@ type DensityGridArgs<DatumType> = {
   direction?: "row" | "column";
   onClickCell?: (e: PointerEvent, d: DatumType) => void;
   getCellTooltip?: (d: DatumType) => string;
-  getCellAttributes?: () => AttributeMap;
+  getCellAttributes?: (d: DatumType, index: number) => AttributeMap;
 };
 
 const DEFAULT_CELL_SPACING = 2;
@@ -58,16 +58,18 @@ export default class DensityGrid<DatumType> {
 
     const cells = container.selectAll("rect").data(data).join("rect");
 
-    setAttrs(
-      {
-        ...getCellAttributes?.(),
-        width: cellWidth - (cellSpacing ?? DEFAULT_CELL_SPACING),
-        height: cellHeight - (cellSpacing ?? DEFAULT_CELL_SPACING),
-        x: cellX,
-        y: cellY,
-      },
-      cells
-    );
+    cells.each(function (this: SVGRectElement, datum: DatumType, index: number) {
+      setAttrs(
+        {
+          ...getCellAttributes?.(datum, index),
+          width: cellWidth - (cellSpacing ?? DEFAULT_CELL_SPACING),
+          height: cellHeight - (cellSpacing ?? DEFAULT_CELL_SPACING),
+          x: cellX,
+          y: cellY,
+        },
+        select(this),
+      );
+    });
 
     return cells;
   }
@@ -112,7 +114,7 @@ export default class DensityGrid<DatumType> {
     const { getCellTooltip } = this.args;
     if (getCellTooltip) {
       const cells = cellsGroup.selectAll("rect");
-      this.tooltip = new Tooltip(cells, getCellTooltip);
+      this.tooltip = new Tooltip<DatumType>(cells, getCellTooltip);
     }
   }
 
