@@ -21,6 +21,23 @@ describe("DensityGrid", () => {
     expect(node.querySelector("svg")).toBeNull();
   });
 
+  it("keeps each cell datum available to attribute accessors", () => {
+    const node = document.createElement("div");
+    document.body.append(node);
+    const grid = new DensityGrid({
+      node,
+      data: ["a", "b"],
+      rows: 1,
+      width: 200,
+      height: 100,
+    });
+
+    grid.render();
+    const cells = node.querySelectorAll("rect");
+    expect(cells[0]?.getAttribute("x")).toBe("0");
+    expect(cells[1]?.getAttribute("x")).toBe("100");
+  });
+
   it("applies attributes from each datum", () => {
     const node = document.createElement("div");
     document.body.append(node);
