@@ -59,15 +59,16 @@ export default class DensityGrid<DatumType> {
     const cells = container.selectAll("rect").data(data).join("rect");
 
     cells.each(function (this: SVGRectElement, datum: DatumType, index: number) {
+      const cell = select(this).datum(datum);
       setAttrs(
         {
           ...getCellAttributes?.(datum, index),
           width: cellWidth - (cellSpacing ?? DEFAULT_CELL_SPACING),
           height: cellHeight - (cellSpacing ?? DEFAULT_CELL_SPACING),
-          x: cellX,
-          y: cellY,
+          x: cellX(datum, index),
+          y: cellY(datum, index),
         },
-        select(this),
+        cell,
       );
     });
 
