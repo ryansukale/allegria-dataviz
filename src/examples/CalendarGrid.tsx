@@ -42,14 +42,14 @@ export function CalendarGrid({ cells, onClick, weeks = null, children }: GridPro
     });
   }, [cells, weeks, onClick]);
 
-  return <div className="chart-scroll" tabIndex={0} aria-label="Calendar heatmap, scroll horizontally if needed">
-    <div className="calendar" style={{ width: Math.max(width + 44, 110) }}>
-      <div className="month-labels" style={{ width }} aria-hidden="true">
-        {monthLabels(cells).map((label, index) => <span key={index} style={{ left: label.column * CELL_SIZE }}>{label.text}</span>)}
+  return <div className="chart-scroll overflow-x-auto pb-2.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" tabIndex={0} aria-label="Calendar heatmap, scroll horizontally if needed">
+    <div style={{ width: Math.max(width + 44, 110) }}>
+      <div className="relative ml-11 h-7 text-[11px] text-slate-500" style={{ width }} aria-hidden="true">
+        {monthLabels(cells).map((label, index) => <span className="absolute top-0" key={index} style={{ left: label.column * CELL_SIZE }}>{label.text}</span>)}
       </div>
-      <div className="calendar-body">
-        <div className="weekday-labels" aria-hidden="true">{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(day => <span key={day}>{day}</span>)}</div>
-        <div className="grid-stack" style={{ width, height: GRID_HEIGHT }}>
+      <div className="flex">
+        <div className="flex w-11 shrink-0 flex-col text-[10px] text-slate-500" aria-hidden="true">{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(day => <span className="flex h-5 items-center" key={day}>{day}</span>)}</div>
+        <div className="grid-stack relative shrink-0" style={{ width, height: GRID_HEIGHT }}>
           <div ref={host} onKeyDown={event => {
             if (!onClick || !["Enter", " "].includes(event.key)) return;
             const date = (event.target as Element).getAttribute("data-date");
@@ -75,9 +75,9 @@ export function CalendarBand({ weekCount, onSelection }: { weekCount: number; on
     band.render();
     return () => band.destroy();
   }, [weekCount, onSelection]);
-  return <div className="range-overlay" ref={host} />;
+  return <div className="range-overlay absolute inset-0" ref={host} />;
 }
 
 export function Legend() {
-  return <div className="legend"><span>Less activity</span>{[0, 1, 6, 11, 16].map(value => <span key={value} className="legend-cell" style={{ background: cellColor(value) }} title={value === 0 ? "0 activities" : `${value}–${value + 4} activities`} />)}<span>More activity</span><span className="legend-note">0–20 per day · generated demo data</span></div>;
+  return <div className="mb-5 mt-3 flex flex-wrap items-center gap-1 text-[10px] text-slate-500 sm:ml-11"><span>Less activity</span>{[0, 1, 6, 11, 16].map(value => <span key={value} className="h-[13px] w-[13px] rounded-[3px]" style={{ background: cellColor(value) }} title={value === 0 ? "0 activities" : `${value}–${value + 4} activities`} />)}<span>More activity</span><span className="mt-1.5 basis-full sm:ml-auto sm:mt-0 sm:basis-auto">0–20 per day · generated demo data</span></div>;
 }

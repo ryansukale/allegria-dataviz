@@ -55,7 +55,9 @@ controls update both examples; drag across the second grid to select all weeks
 touched by the band, or use **Clear selection** to reset it.
 
 The examples use repeatable generated activity data, Monday-first weeks, and
-UTC calendar dates. They run in the existing React app with plain CSS.
+UTC calendar dates. They run in the existing React app with Tailwind utilities
+and a small stylesheet for D3-generated SVG elements. Example code and styles
+are excluded from the published library package.
 
 ## Releases
 
