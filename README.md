@@ -46,6 +46,19 @@ pnpm build
 pnpm test
 ```
 
+## Interactive examples
+
+Run `pnpm dev` and open the local URL printed by Vite. The example page includes
+a calendar density grid with daily tooltips and cell selection, plus a second
+grid with an overlaid RangeBand and a table of selected dates. Shared date
+controls update both examples; drag across the second grid to select all weeks
+touched by the band, or use **Clear selection** to reset it.
+
+The examples use repeatable generated activity data, Monday-first weeks, and
+UTC calendar dates. They run in the existing React app with Tailwind utilities
+and a small stylesheet for D3-generated SVG elements. Example code and styles
+are excluded from the published library package.
+
 ## Releases
 
 Release preparation and branch expectations are documented in [`docs/releases.md`](docs/releases.md). Alpha releases come from `develop`; stable releases come from `main` and publish to the npm `latest` dist-tag.
