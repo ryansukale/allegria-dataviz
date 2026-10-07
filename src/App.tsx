@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { CalendarBand, CalendarGrid, Legend } from "./examples/CalendarGrid";
 import {
   type CalendarCell,
-  type WeekSelection,
+  type GridSelection,
   createCalendar,
   formatDate,
   selectedCells,
@@ -52,30 +52,30 @@ function BasicExample({ cells }: { cells: CalendarCell[] }) {
 }
 
 function SelectionExample({ cells }: { cells: CalendarCell[] }) {
-  const [weeks, setWeeks] = useState<WeekSelection>(null);
+  const [selection, setSelection] = useState<GridSelection>(null);
   const [reset, setReset] = useState(0);
-  const selected = useMemo(() => selectedCells(cells, weeks), [cells, weeks]);
+  const selected = useMemo(() => selectedCells(cells, selection), [cells, selection]);
   const total = selected.reduce((sum, cell) => sum + cell.value, 0);
   return (
     <Example number="02" id="selection-title" title="Select a range with RangeBand"
-      description="Drag across the grid to select weeks. Move the band or drag its edges to adjust it. Every week touched is included.">
-      <CalendarGrid cells={cells} weeks={weeks}>
-        <CalendarBand key={reset} weekCount={cells.length / 7} onSelection={setWeeks} />
+      description="Drag a rectangle across the grid to select days. Move the rectangle or drag its edges and corners to adjust it. Every cell touched is included.">
+      <CalendarGrid cells={cells} selection={selection}>
+        <CalendarBand key={reset} weekCount={cells.length / 7} onSelection={setSelection} />
       </CalendarGrid>
       <Legend />
       <div className="selection-summary flex flex-col items-start justify-between gap-5 border-t border-slate-100 py-4 text-sm sm:flex-row sm:items-center">
         <div aria-live="polite">
           <strong className="font-semibold">
             {selected.length
-              ? `${formatDate(selected[0].date!)} – ${formatDate(selected[selected.length - 1].date!)}`
-              : "No weeks selected"}
+              ? `${selected.length} ${selected.length === 1 ? "day" : "days"} selected`
+              : "No days selected"}
           </strong>
           <p className="mt-1 text-xs leading-relaxed text-slate-500">
-            {selected.length ? `${selected.length} days selected · ${total} activities` : "Drag over the calendar to inspect a date range."}
+            {selected.length ? `${total} activities` : "Drag over the calendar to inspect selected days."}
           </p>
         </div>
-        <button className={buttonClasses} type="button" disabled={!weeks}
-          onClick={() => { setWeeks(null); setReset(value => value + 1); }}>
+        <button className={buttonClasses} type="button" disabled={!selection}
+          onClick={() => { setSelection(null); setReset(value => value + 1); }}>
           Clear selection
         </button>
       </div>

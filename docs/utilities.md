@@ -2,7 +2,9 @@
 
 ## `createBrush`
 
-`createBrush` applies a horizontal D3 brush to an existing SVG group. It accepts optional `size`, `onStart`, `onBrush`, and `onEnd` options and returns the configured brush instance.
+`createBrush` applies a D3 brush to an existing SVG group. It accepts optional `size`, `selectionMode`, `onStart`, `onBrush`, and `onEnd` options and returns the configured brush instance.
+
+`selectionMode` defaults to `"horizontal"`, reporting `[x0, x1]`. Set it to `"rectangular"` to report `[[x0, y0], [x1, y1]]`. Both modes report `null` when cleared. `size` sets the pixel extent using `{ startX, startY, width, height }`; otherwise D3 derives the extent from the SVG. The `BrushSelectionMode` type is available from the package root.
 
 ## Scale helpers
 
