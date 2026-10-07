@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* These SVG elements are created by D3 rather than the example's JSX. */
+.grid-stack rect[role="button"] {
+  cursor: pointer;
+}
+
+.grid-stack rect:focus-visible {
+  outline: none;
+  stroke: theme("colors.slate.900");
+  stroke-width: 2px;
+}
+
+.range-overlay .selection {
+  fill: theme("colors.blue.700");
+  fill-opacity: .12;
+  stroke: theme("colors.blue.700");
+  stroke-width: 1.5;
+}
+
+.range-overlay .handle {
+  fill: theme("colors.blue.700");
+  fill-opacity: .7;
+}

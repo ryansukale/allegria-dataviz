@@ -32,7 +32,7 @@ For individual modules, use subpath imports such as `@allegria/dataviz/DensityGr
 ## Components
 
 - [`DensityGrid`](docs/density-grid.md) renders a rectangular data grid as SVG cells.
-- [`RangeBand`](docs/range-band.md) adds an interactive horizontal brush to an SVG container.
+- [`RangeBand`](docs/range-band.md) adds an interactive brush to an SVG container: `selectionMode: "horizontal"` (default) or `"rectangular"`.
 - [`Tooltip`](docs/tooltip.md) provides the tooltip behavior used by `DensityGrid`.
 - [`Utilities`](docs/utilities.md) covers brushes and scale helpers.
 
@@ -45,6 +45,20 @@ pnpm lint
 pnpm build
 pnpm test
 ```
+
+## Interactive examples
+
+Run `pnpm dev` and open the local URL printed by Vite. The example page includes
+a calendar density grid with daily tooltips and cell selection, plus a second
+grid with an overlaid RangeBand and a table of selected dates. Shared date
+controls update both examples; drag a rectangle across the second grid to select
+touched cells, or use **Clear selection** to reset it. Move the rectangle or drag
+its edges and corners to adjust the selection.
+
+The examples use repeatable generated activity data, Monday-first weeks, and
+UTC calendar dates. They run in the existing React app with Tailwind utilities
+and a small stylesheet for D3-generated SVG elements. Example code and styles
+are excluded from the published library package.
 
 ## Releases
 
