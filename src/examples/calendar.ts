@@ -1,9 +1,11 @@
+import { type BrushSelection } from "d3-brush";
+
 export const CELL_SIZE = 20;
 export const GRID_HEIGHT = CELL_SIZE * 7;
 const DAY = 86_400_000;
 
 export type CalendarCell = { date: string | null; value: number };
-export type WeekSelection = [number, number] | null;
+export type GridSelection = { columns: [number, number]; rows: [number, number] } | null;
 
 export function parseDate(value: string): number | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
@@ -36,16 +38,28 @@ export function createCalendar(start: string, end: string): CalendarCell[] {
   });
 }
 
-export function weeksFromPixels(selection: [number, number] | null, weekCount: number): WeekSelection {
-  if (!selection || selection[1] <= selection[0] || weekCount <= 0) return null;
-  const start = Math.max(0, Math.floor(selection[0] / CELL_SIZE));
-  const end = Math.min(weekCount - 1, Math.ceil(selection[1] / CELL_SIZE) - 1);
-  return start <= end ? [start, end] : null;
+// Interactive D3 brush events supply ordered corners within RangeBand's extent.
+export function cellsFromPixels(selection: BrushSelection | null): GridSelection {
+  if (!selection || !Array.isArray(selection[0]) || !Array.isArray(selection[1])) return null;
+  const [[x0, y0], [x1, y1]] = selection;
+  // During a gesture, brush events can still describe a zero-area rectangle.
+  if (x1 <= x0 || y1 <= y0) return null;
+  return {
+    columns: [Math.floor(x0 / CELL_SIZE), Math.ceil(x1 / CELL_SIZE) - 1],
+    rows: [Math.floor(y0 / CELL_SIZE), Math.ceil(y1 / CELL_SIZE) - 1],
+  };
 }
 
-export function selectedCells(cells: CalendarCell[], weeks: WeekSelection): CalendarCell[] {
-  if (!weeks) return [];
-  return cells.slice(weeks[0] * 7, (weeks[1] + 1) * 7).filter(cell => cell.date !== null);
+export function isCellSelected(index: number, selection: GridSelection): boolean {
+  if (!selection) return false;
+  const column = Math.floor(index / 7);
+  const row = index % 7;
+  return column >= selection.columns[0] && column <= selection.columns[1]
+    && row >= selection.rows[0] && row <= selection.rows[1];
+}
+
+export function selectedCells(cells: CalendarCell[], selection: GridSelection): CalendarCell[] {
+  return cells.filter((cell, index) => cell.date !== null && isCellSelected(index, selection));
 }
 
 export const COLORS = ["#e5e9ef", "#c5dbfd", "#87b4f5", "#4e88df", "#2359aa"];

@@ -1,16 +1,16 @@
 import { useEffect, useRef } from "react";
 import DensityGrid from "../dataviz/DensityGrid";
 import RangeBand from "../dataviz/RangeBand";
-import { type CalendarCell, type WeekSelection, CELL_SIZE, GRID_HEIGHT, cellColor, formatDate, monthLabels, weeksFromPixels } from "./calendar";
+import { type CalendarCell, type GridSelection, CELL_SIZE, GRID_HEIGHT, cellColor, formatDate, monthLabels, cellsFromPixels, isCellSelected } from "./calendar";
 
 type GridProps = {
   cells: CalendarCell[];
   onClick?: (cell: CalendarCell) => void;
-  weeks?: WeekSelection;
+  selection?: GridSelection;
   children?: React.ReactNode;
 };
 
-export function CalendarGrid({ cells, onClick, weeks = null, children }: GridProps) {
+export function CalendarGrid({ cells, onClick, selection = null, children }: GridProps) {
   const host = useRef<HTMLDivElement>(null);
   const width = cells.length / 7 * CELL_SIZE;
 
@@ -36,11 +36,10 @@ export function CalendarGrid({ cells, onClick, weeks = null, children }: GridPro
 
   useEffect(() => {
     host.current?.querySelectorAll("rect").forEach((rect, index) => {
-      const column = Math.floor(index / 7);
-      const selected = !weeks || (column >= weeks[0] && column <= weeks[1]);
+      const selected = !selection || isCellSelected(index, selection);
       rect.setAttribute("opacity", cells[index].date ? selected ? "1" : "0.2" : "0");
     });
-  }, [cells, weeks, onClick]);
+  }, [cells, selection, onClick]);
 
   return <div className="chart-scroll overflow-x-auto pb-2.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" tabIndex={0} aria-label="Calendar heatmap, scroll horizontally if needed">
     <div style={{ width: Math.max(width + 44, 110) }}>
@@ -63,14 +62,15 @@ export function CalendarGrid({ cells, onClick, weeks = null, children }: GridPro
   </div>;
 }
 
-export function CalendarBand({ weekCount, onSelection }: { weekCount: number; onSelection: (weeks: WeekSelection) => void }) {
+export function CalendarBand({ weekCount, onSelection }: { weekCount: number; onSelection: (selection: GridSelection) => void }) {
   const host = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!host.current) return;
     const band = new RangeBand({
       node: host.current, width: weekCount * CELL_SIZE, height: GRID_HEIGHT,
-      onBrush: event => onSelection(weeksFromPixels(event.selection as [number, number] | null, weekCount)),
-      onEnd: event => onSelection(weeksFromPixels(event.selection as [number, number] | null, weekCount)),
+      selectionMode: "rectangular",
+      onBrush: event => onSelection(cellsFromPixels(event.selection)),
+      onEnd: event => onSelection(cellsFromPixels(event.selection)),
     });
     band.render();
     return () => band.destroy();

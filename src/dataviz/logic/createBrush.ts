@@ -1,19 +1,23 @@
-import { brushX, type D3BrushEvent } from "d3-brush";
+import { brush as rectangularBrush, brushX, type D3BrushEvent } from "d3-brush";
+
+export type BrushSelectionMode = "horizontal" | "rectangular";
 
 export default function createBrush({
   container,
   size,
+  selectionMode = "horizontal",
   onStart,
   onEnd,
   onBrush,
 }: {
   container: D3Selection["G"];
   size?: { startX: number; startY: number; width: number; height: number };
+  selectionMode?: BrushSelectionMode;
   onStart?: (event: D3BrushEvent<unknown>) => void;
   onEnd?: (event: D3BrushEvent<unknown>) => void;
   onBrush?: (event: D3BrushEvent<unknown>) => void;
 }) {
-  const brush = brushX();
+  const brush = selectionMode === "rectangular" ? rectangularBrush() : brushX();
   if (size) {
     const { startX, startY, width, height } = size;
 
