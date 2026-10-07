@@ -38,18 +38,16 @@ export function createCalendar(start: string, end: string): CalendarCell[] {
   });
 }
 
-export function cellsFromPixels(selection: BrushSelection | null, weekCount: number): GridSelection {
-  if (!selection || weekCount <= 0 || !Array.isArray(selection[0]) || !Array.isArray(selection[1])) return null;
+// Interactive D3 brush events supply ordered corners within RangeBand's extent.
+export function cellsFromPixels(selection: BrushSelection | null): GridSelection {
+  if (!selection || !Array.isArray(selection[0]) || !Array.isArray(selection[1])) return null;
   const [[x0, y0], [x1, y1]] = selection;
-  if (![x0, y0, x1, y1].every(Number.isFinite)) return null;
-  const left = Math.min(x0, x1);
-  const right = Math.max(x0, x1);
-  const top = Math.min(y0, y1);
-  const bottom = Math.max(y0, y1);
-  if (right <= left || bottom <= top) return null;
-  const columns: [number, number] = [Math.max(0, Math.floor(left / CELL_SIZE)), Math.min(weekCount - 1, Math.ceil(right / CELL_SIZE) - 1)];
-  const rows: [number, number] = [Math.max(0, Math.floor(top / CELL_SIZE)), Math.min(6, Math.ceil(bottom / CELL_SIZE) - 1)];
-  return columns[0] <= columns[1] && rows[0] <= rows[1] ? { columns, rows } : null;
+  // During a gesture, brush events can still describe a zero-area rectangle.
+  if (x1 <= x0 || y1 <= y0) return null;
+  return {
+    columns: [Math.floor(x0 / CELL_SIZE), Math.ceil(x1 / CELL_SIZE) - 1],
+    rows: [Math.floor(y0 / CELL_SIZE), Math.ceil(y1 / CELL_SIZE) - 1],
+  };
 }
 
 export function isCellSelected(index: number, selection: GridSelection): boolean {

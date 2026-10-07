@@ -69,8 +69,8 @@ export function CalendarBand({ weekCount, onSelection }: { weekCount: number; on
     const band = new RangeBand({
       node: host.current, width: weekCount * CELL_SIZE, height: GRID_HEIGHT,
       selectionMode: "rectangular",
-      onBrush: event => onSelection(cellsFromPixels(event.selection, weekCount)),
-      onEnd: event => onSelection(cellsFromPixels(event.selection, weekCount)),
+      onBrush: event => onSelection(cellsFromPixels(event.selection)),
+      onEnd: event => onSelection(cellsFromPixels(event.selection)),
     });
     band.render();
     return () => band.destroy();

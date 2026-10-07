@@ -44,3 +44,5 @@ rectangle.render();
 ```
 
 RangeBand works independently of DensityGrid and calendar data. Callers map the SVG pixel coordinates to their own data. The calendar example selects every grid slot overlapped by the rectangle (including cell spacing), excludes invisible padding, and keeps its highlighted cells, summary, and table consistent. Those dates may have gaps between week columns.
+
+RangeBand configures `brush.extent()` to match its SVG width and height. D3 orders the selection corners and constrains interactive gestures to these bounds; the calendar example relies on those guarantees when converting pixels to grid slots.

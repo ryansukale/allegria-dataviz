@@ -89,6 +89,28 @@ describe("interactive calendar examples", () => {
     expect(host.querySelectorAll("svg")).toHaveLength(3);
   });
 
+  it.each([
+    { x: -100, y: -100, dates: ["2026-01-01"] },
+    { x: 100, y: -100, dates: ["2026-01-05", "2026-01-06", "2026-01-07", "2026-01-08"] },
+    { x: -100, y: 200, dates: ["2026-01-01", "2026-01-02", "2026-01-03", "2026-01-04"] },
+    { x: 100, y: 200, dates: ["2026-01-08"] },
+  ])("relies on D3 to bound a drag toward ($x, $y)", ({ x, y, dates }) => {
+    changeDate(1, "2026-01-08");
+    act(() => host.querySelector("form")!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })));
+    const overlay = host.querySelector(".range-overlay .overlay")!;
+    mouse(overlay, "mousedown", 20, 70);
+    mouse(window, "mousemove", x, y);
+    mouse(window, "mouseup", x, y);
+    const secondGrid = host.querySelectorAll(".grid-stack")[1];
+    const selected = [...secondGrid.querySelectorAll('rect[data-date]')]
+      .filter(rect => rect.getAttribute("opacity") === "1")
+      .map(rect => rect.getAttribute("data-date"));
+    expect(selected).toEqual(dates);
+    expect(host.querySelectorAll("tbody tr")).toHaveLength(dates.length);
+    const count = `${dates.length} ${dates.length === 1 ? "day" : "days"} selected`;
+    expect(host.querySelector(".selection-summary")!.textContent).toContain(count);
+  });
+
   it("retains valid charts on invalid input and resets selection when applying new dates", () => {
     const overlay = host.querySelector(".range-overlay .overlay")!;
     mouse(overlay, "mousedown", 1, 61);
